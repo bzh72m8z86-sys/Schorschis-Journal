@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schorschis Journal</title>
+
+    <!-- =========================================================================
+         DEINE BILDER-DATENBANK (Ganz oben, damit du sie sofort findest!)
+         ========================================================================= -->
+    <script id="foto-daten">
+        let MEINE_FOTOS = [
+            {
+                "id": 1,
+                "url": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200",
+                "caption": "Frühmorgendlicher Nebel, der sich sanft um die Baumkronen des Waldes legt. Ein stiller, friedlicher Moment fernab jeglicher Hektik.",
+                "date": "14. Juni 2026",
+                "tags": [
+                    "Natur",
+                    "Nebel",
+                    "Analog"
+                ]
+            },
+            {
+                "id": 2,
+                "url": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200",
+                "caption": "Lichtspiele am Strand. Die Ebbe hinterlässt spiegelglatte Flächen im Sand, die das letzte Abendlicht reflektieren.",
+                "date": "02. Juni 2026",
+                "tags": [
+                    "Minimalistisch",
+                    "Strand",
+                    "Sommer"
+                ]
+            },
+            {
+                "id": 3,
+                "url": "https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1200",
+                "caption": "Schroffe Gipfelformationen im warmen Gegenlicht. Die Besteigung am frühen Nachmittag hat sich mehr als gelohnt.",
+                "date": "24. Mai 2026",
+                "tags": [
+                    "Berge",
+                    "Landschaft"
+                ]
+            },
+            {
+                "id": 4,
+                "url": "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=1200",
+                "caption": "Eine Tasse warmer Kaffee an einem regnerischen Sonntagmorgen. Manchmal liegt die Schönheit im Einfachen.",
+                "date": "11. April 2026",
+                "tags": [
+                    "Stillleben",
+                    "Zuhause"
+                ]
+            },
+            {
+                "id": 5,
+                "url": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200",
+                "caption": "Frische Zutaten, kunstvoll angerichtet. Ein schnelles, gesundes Mittagessen an einem produktiven Tag im Studio.",
+                "date": "19. März 2026",
+                "tags": [
+                    "Food",
+                    "Studio"
+                ]
+            }
+        ];
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600&family=Playfair+Display:ital,wght=0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.4s, color 0.4s;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-[#faf9f6] text-stone-900 dark:bg-[#090b11] dark:text-[#f3f4f6] min-h-screen flex flex-col justify-between">
+
+    <!-- Minimal Header -->
+    <nav class="sticky top-0 z-40 bg-[#faf9f6]/90 dark:bg-[#090b11]/90 backdrop-blur-md border-b border-stone-200 dark:border-stone-900 transition-colors">
+        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex flex-col">
+                <span class="font-serif text-2xl tracking-tight">Schorschis Journal</span>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center space-x-6">
+                <!-- Search (Sleek & Underlined) -->
+                <div class="relative hidden sm:block">
+                    <input type="text" id="searchInput" oninput="filterPhotos()" placeholder="Suchen..." class="w-40 bg-transparent border-b border-stone-300 dark:border-stone-800 focus:border-stone-900 dark:focus:border-stone-300 px-1 py-1 text-xs focus:outline-none transition-colors placeholder-stone-400">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-6 py-12 flex-grow w-full">
+
+        <!-- Search bar for Mobile devices -->
+        <div class="block sm:hidden mb-8">
+            <input type="text" id="searchInputMobile" oninput="filterPhotos(true)" placeholder="Suchen nach Tags..." class="w-full bg-stone-100 dark:bg-stone-900 border-none rounded-lg px-4 py-2.5 text-xs focus:outline-none">
+        </div>
+
+        <!-- Portfolio Photo Grid -->
+        <div id="photoGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+            <!-- Dynamisch geladene Bilder -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden flex-col items-center justify-center py-24 text-stone-400">
+            <p class="font-serif italic text-xl">Keine Fundstücke vorhanden</p>
+            <p class="text-xs mt-1">Passe deinen Suchfilter an oder füge ein neues Bild hinzu.</p>
+        </div>
+
+    </main>
+
+    <!-- Footer with Copyright Safety & Impressum Link -->
+    <footer class="border-t border-stone-200 dark:border-stone-900 bg-stone-100/50 dark:bg-[#07080c] transition-colors select-none">
+        <div class="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center justify-between text-xs text-stone-500 space-y-4 md:space-y-0">
+            <div class="text-center md:text-left">
+                <p class="font-medium text-stone-700 dark:text-stone-400">Schorschis Journal — Privatarchiv © 2026</p>
+                <!-- Der geheime Schwuppsi Trigger auf dem finalen Punkt -->
+                <p class="mt-1 text-[11px]">Diese Website dient ausschließlich privaten Zwecken<span onclick="openSchwuppsiModal()" class="cursor-default hover:text-stone-900 dark:hover:text-white transition-colors duration-200">.</span></p>
+            </div>
+            
+            <div class="flex space-x-6 text-[11px]">
+                <button onclick="toggleLegalModal()" class="hover:underline hover:text-stone-950 dark:hover:text-white font-medium">Impressum & Rechtliches</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PHOTO DETAIL MODAL -->
+    <div id="detailModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-stone-950/90 backdrop-blur-md transition-opacity" onclick="closeDetailModal()"></div>
+        
+        <div class="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-10">
+            <div class="relative bg-[#faf9f6] dark:bg-[#0c0e14] rounded-xl overflow-hidden max-w-5xl w-full shadow-2xl flex flex-col md:flex-row max-h-[90vh] border border-stone-200/50 dark:border-stone-900">
+                <!-- Close Button -->
+                <button onclick="closeDetailModal()" class="absolute top-4 right-4 z-10 p-2 bg-stone-900/10 dark:bg-white/10 hover:bg-stone-900/20 dark:hover:bg-white/20 rounded-full text-stone-900 dark:text-white transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+
+                <!-- Image Side -->
+                <div class="md:w-2/3 bg-stone-900/20 dark:bg-black/40 flex items-center justify-center overflow-hidden min-h-[250px] md:min-h-0">
+                    <img id="modalImage" src="" alt="Großansicht" class="w-full h-full object-contain max-h-[50vh] md:max-h-[75vh]">
+                </div>
+
+                <!-- Info Side -->
+                <div class="md:w-1/3 p-8 flex flex-col justify-between overflow-y-auto bg-[#faf9f6] dark:bg-[#0c0e14]">
+                    <div class="space-y-6">
+                        <div class="pb-4 border-b border-stone-200 dark:border-stone-900">
+                            <span class="text-[10px] tracking-widest uppercase text-stone-400 dark:text-stone-500">Aufnahmedatum</span>
+                            <p id="modalDate" class="text-sm font-medium mt-0.5">---</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <span class="text-[10px] tracking-widest uppercase text-stone-400 dark:text-stone-500">Beschreibung</span>
+                            <p id="modalCaption" class="text-sm text-stone-700 dark:text-stone-300 leading-relaxed font-serif"></p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <span class="text-[10px] tracking-widest uppercase text-stone-400 dark:text-stone-500">Kategorien</span>
+                            <div id="modalTags" class="flex flex-wrap gap-2">
+                                <!-- Tags -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom section -->
+                    <div class="border-t border-stone-200 dark:border-stone-900 pt-6 mt-8 flex items-center justify-between text-xs">
+                        <span class="text-stone-400 dark:text-stone-500 italic">© Alle Rechte vorbehalten.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHWUPPSI MASTER EDITOR MODAL -->
+    <div id="schwuppsiModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-stone-950/80 backdrop-blur-sm" onclick="closeSchwuppsiModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="relative bg-[#faf9f6] dark:bg-[#0c0e14] rounded-2xl p-6 md:p-8 max-w-5xl w-full shadow-2xl border border-stone-200 dark:border-stone-900 flex flex-col lg:flex-row gap-8 max-h-[90vh]">
+                
+                <!-- Left Column: Drag & Drop + Meta -->
+                <div class="flex-1 space-y-4 overflow-y-auto pr-2">
+                    <div class="border-b border-stone-200 dark:border-stone-800 pb-3">
+                        <h3 class="font-serif text-2xl">Foto einfügen</h3>
+                        <p class="text-[11px] text-stone-400">Ziehe ein Bild hinein oder wähle eines aus.</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Drag & Drop Area -->
+                        <div id="dropZone" class="border-2 border-dashed border-stone-300 dark:border-stone-800 rounded-xl p-6 text-center hover:border-stone-500 dark:hover:border-stone-600 transition-colors cursor-pointer bg-stone-50 dark:bg-stone-900/40">
+                            <div class="space-y-1">
+                                <svg class="mx-auto h-8 w-8 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p class="text-xs text-stone-500">Bild hierher ziehen (Drag & Drop)</p>
+                                <p class="text-[10px] text-stone-400">oder klicken zum Auswählen</p>
+                            </div>
+                            <input type="file" id="fileInput" accept="image/*" class="hidden">
+                            <!-- Preview container -->
+                            <div id="dragPreview" class="hidden mt-3 flex justify-center">
+                                <img id="previewImg" class="h-20 w-auto rounded object-cover border border-stone-200 dark:border-stone-800 shadow">
+                            </div>
+                        </div>
+
+                        <!-- Alternativer Text-Input für URLs/relative Pfade -->
+                        <div>
+                            <label class="block text-[10px] tracking-widest uppercase text-stone-400 dark:text-stone-500 mb-1">Alternative Bild-URL oder Pfad</label>
+                            <input type="text" id="addImgUrl" placeholder="z. B. bilder/foto.jpg oder https://..." class="w-full px-3 py-2 rounded-lg bg-stone-200/50 dark:bg-stone-900 text-xs border-none focus:ring-1 focus:ring-stone-400 dark:focus:ring-stone-700 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] tracking-widest uppercase text-stone-400 dark:text-stone-500 mb-1">Beschreibung</label>
+                            <textarea id="addCaption" placeholder="Schreibe einen schönen Text zu diesem Augenblick..." rows="2" class="w-full px-3 py-2 rounded-lg bg-stone-200/50 dark:bg-stone-900 text-xs border-none focus:ring-1 focus:ring-stone-400 dark:focus:ring-stone-700 focus:outline-none font-serif"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] tracking-widest uppercase text-stone-400 dark:text-stone-500 mb-1">Kategorien / Tags (kommagetrennt)</label>
+                            <input type="text" id="addTags" placeholder="z. B. Natur, Analog, Ostsee" class="w-full px-3 py-2 rounded-lg bg-stone-200/50 dark:bg-stone-900 text-xs border-none focus:ring-1 focus:ring-stone-400 dark:focus:ring-stone-700 focus:outline-none">
+                        </div>
+                        
+                        <button onclick="submitAddPhoto()" class="w-full py-2 text-xs font-bold text-white bg-stone-900 hover:bg-stone-800 dark:bg-white dark:text-black dark:hover:bg-stone-100 rounded-lg transition-colors">
+                            Foto hinzufügen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: List of existing & Deletion -->
+                <div class="flex-1 flex flex-col min-h-[300px] lg:min-h-0 border-t lg:border-t-0 lg:border-l border-stone-200 dark:border-stone-800 pt-6 lg:pt-0 lg:pl-8 overflow-hidden">
+                    <div class="border-b border-stone-200 dark:border-stone-800 pb-3 mb-4">
+                        <h3 class="font-serif text-2xl">Bilder verwalten</h3>
+                        <p class="text-[11px] text-stone-400">Verwalte deine Bilder der aktuellen Ansicht.</p>
+                    </div>
+
+                    <!-- Scrollable list of active photos -->
+                    <div id="schwuppsiList" class="flex-grow overflow-y-auto space-y-3 max-h-[22vh] lg:max-h-[30vh] pr-2">
+                        <!-- List populated by JavaScript -->
+                    </div>
+
+                    <!-- Cloud Setup Form for Netlify Auto-Deploys via GitHub -->
+                    <div class="mt-4 pt-4 border-t border-stone-200 dark:border-stone-800 space-y-3">
+                        <div class="rounded-xl bg-indigo-950/10 dark:bg-indigo-950/30 border border-indigo-200/20 dark:border-indigo-800/20 p-3">
+                            <span class="text-[9px] font-semibold text-indigo-400 dark:text-indigo-300 tracking-wider uppercase block mb-1.5">Netlify & GitHub Live-Verbindung</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[8px] uppercase text-stone-400 dark:text-stone-500 mb-0.5">GitHub Username</label>
+                                    <input type="text" id="githubUser" placeholder="z.B. jschneider" class="w-full px-2 py-1 rounded bg-stone-200/50 dark:bg-stone-900 text-[10px] border-none focus:outline-none text-stone-900 dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[8px] uppercase text-stone-400 dark:text-stone-500 mb-0.5">Repo Name</label>
+                                    <input type="text" id="githubRepo" placeholder="z.B. journal" class="w-full px-2 py-1 rounded bg-stone-200/50 dark:bg-stone-900 text-[10px] border-none focus:outline-none text-stone-900 dark:text-white">
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <label class="block text-[8px] uppercase text-stone-400 dark:text-stone-500 mb-0.5">Dateiname (meist gallery.html oder index.html)</label>
+                                <input type="text" id="githubPath" placeholder="gallery.html" class="w-full px-2 py-1 rounded bg-stone-200/50 dark:bg-stone-900 text-[10px] border-none focus:outline-none text-stone-900 dark:text-white">
+                            </div>
+                            <div class="mt-2">
+                                <label class="block text-[8px] uppercase text-stone-400 dark:text-stone-500 mb-0.5">GitHub Personal Access Token (PAT)</label>
+                                <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxx" class="w-full px-2 py-1 rounded bg-stone-200/50 dark:bg-stone-900 text-[10px] border-none focus:outline-none text-stone-900 dark:text-white">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <!-- Live directly commit via Github API -->
+                            <button id="btnCommitLive" onclick="saveViaGitHubCommit()" class="flex-1 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-lg transition-colors flex items-center justify-center space-x-1 shadow-lg shadow-indigo-500/10">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                <span>Direkt live speichern</span>
+                            </button>
+
+                            <!-- Fallback Backup Download -->
+                            <button onclick="downloadUpdatedHTML()" class="py-2 px-3 text-xs font-bold text-stone-700 dark:text-stone-300 bg-stone-200/60 dark:bg-stone-900 hover:bg-stone-300 dark:hover:bg-stone-800 rounded-lg transition-colors flex items-center justify-center space-x-1" title="Als lokale HTML-Datei herunterladen">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                <span>Backup laden</span>
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-between items-center text-[10px] text-stone-400">
+                            <span>Sicheres Cloud-Update für Netlify</span>
+                            <button onclick="closeSchwuppsiModal()" class="hover:underline text-stone-500">Abbrechen</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPRESSUM / LEGAL INFO MODAL (WITH TABS FOR DATENSCHUTZERKLÄRUNG) -->
+    <div id="legalModal" class="hidden fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-stone-950/80 backdrop-blur-sm" onclick="toggleLegalModal()"></div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="relative bg-[#faf9f6] dark:bg-[#0c0e14] rounded-xl p-8 max-w-3xl w-full shadow-2xl border border-stone-200 dark:border-stone-900 flex flex-col max-h-[85vh]">
+                
+                <!-- Tab Header -->
+                <div class="flex border-b border-stone-200 dark:border-stone-800 mb-6 flex-shrink-0">
+                    <button id="tabBtnImpressum" onclick="switchLegalTab('impressum')" class="pb-3 text-xs uppercase tracking-wider font-semibold border-b-2 border-stone-950 dark:border-white text-stone-950 dark:text-white mr-6">
+                        Impressum
+                    </button>
+                    <button id="tabBtnDatenschutz" onclick="switchLegalTab('datenschutz')" class="pb-3 text-xs uppercase tracking-wider font-semibold border-b-2 border-transparent text-stone-400 hover:text-stone-600 dark:hover:text-white">
+                        Datenschutzerklärung
+                    </button>
+                </div>
+
+                <!-- Scrollable Content Box -->
+                <div class="overflow-y-auto flex-grow text-xs text-stone-600 dark:text-stone-300 pr-3 scrollbar">
+                    
+                    <!-- PANE 1: IMPRESSUM -->
+                    <div id="paneImpressum" class="space-y-6">
+                        <div class="space-y-1">
+                            <p class="font-bold text-sm text-stone-900 dark:text-white">Angaben gemäß § 5 DDG</p>
+                            <p class="font-medium text-stone-800 dark:text-stone-200">Johannes Schneider</p>
+                            <p>Jakob Ruß Weg 3</p>
+                            <p>88214 Ravensburg</p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <p class="font-bold text-stone-900 dark:text-white">Vertreten durch:</p>
+                            <p>Johannes Schneider</p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <p class="font-bold text-stone-900 dark:text-white">Kontakt:</p>
+                            <p>Telefon: 017631525007</p>
+                            <p>E-Mail: johannes.schneider.rv@outlook.de</p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <p class="font-bold text-stone-900 dark:text-white">Verbraucherstreitbeilegung / Universalschlichtungsstelle</p>
+                            <p class="leading-relaxed">Wir nehmen nicht an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teil und sind dazu auch nicht verpflichtet.</p>
+                        </div>
+
+                        <div class="space-y-1.5 border-t border-stone-200 dark:border-stone-800 pt-4">
+                            <p class="font-bold text-stone-900 dark:text-white">Haftung für Inhalte</p>
+                            <p class="leading-relaxed text-justify">
+                                Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen. Als Diensteanbieter sind wir gemäß § 7 Abs.1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen. Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt. Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden von entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <p class="font-bold text-stone-900 dark:text-white">Haftung für Links</p>
+                            <p class="leading-relaxed text-justify">
+                                Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich. Die verlinkten Seiten wurden zum Zeitpunkt der Verlinkung auf mögliche Rechtsverstöße überprüft. Rechtswidrige Inhalte waren zum Zeitpunkt der Verlinkung nicht erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist jedoch ohne konkrete Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Links umgehend entfernen.
+                            </p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <p class="font-bold text-stone-900 dark:text-white">Urheberrecht</p>
+                            <p class="leading-relaxed text-justify">
+                                Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers. Downloads und Kopien dieser Seite sind nur für den privaten, nicht kommerziellen Gebrauch gestattet. Soweit die Inhalte auf dieser Seite nicht vom Betreiber erstellt wurden, werden die Urheberrechte Dritter beachtet. Insbesondere werden Inhalte Dritter als solche gekennzeichnet. Sollten Sie trotzdem auf eine Urheberrechtsverletzung aufmerksam werden, bitten wir um einen entsprechenden Hinweis. Bei Bekanntwerden von Rechtsverletzungen werden wir derartige Inhalte umgehend entfernen.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- PANE 2: DATENSCHUTZERKLÄRUNG (eRecht24) -->
+                    <div id="paneDatenschutz" class="space-y-6 hidden">
+                        <div class="space-y-2">
+                            <h4 class="font-bold text-sm text-stone-900 dark:text-white">1. Datenschutz auf einen Blick</h4>
+                            <p class="font-semibold text-stone-800 dark:text-stone-200 mt-2">Allgemeine Hinweise</p>
+                            <p class="leading-relaxed text-justify">
+                                Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können. Ausführliche Informationen zum Thema Datenschutz entnehmen Sie unserer unter diesem Text aufgeführten Datenschutzerklärung.
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <p class="font-semibold text-stone-800 dark:text-stone-200">Datenerfassung auf dieser Website</p>
+                            <p class="font-bold text-stone-900 dark:text-white text-[11px] mt-1">Wer ist verantwortlich für die Datenerfassung auf dieser Website?</p>
+                            <p class="leading-relaxed text-justify">
+                                Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen Kontaktdaten können Sie dem Abschnitt „Hinweis zur verantwortlichen Stelle“ in dieser Datenschutzerklärung entnehmen.
+                            </p>
+                            <p class="font-bold text-stone-900 dark:text-white text-[11px] mt-2">Wie erfassen wir Ihre Daten?</p>
+                            <p class="leading-relaxed text-justify">
+                                Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen. Hierbei kann es sich z. B. um Daten handeln, die Sie in ein kontaktformular eingeben. Andere Daten werden automatisch oder nach Ihrer Einwilligung beim Besuch der Website durch unsere IT-Systeme erfasst. Das sind vor allem technische Daten (z. B. Internetbrowser, Betriebssystem oder Uhrzeit des Seitenaufrufs). Die Erfassung dieser Daten erfolgt automatisch, sobald Sie diese Website betreten.
+                            </p>
+                            <p class="font-bold text-stone-900 dark:text-white text-[11px] mt-2">Wofür nutzen wir Ihre Daten?</p>
+                            <p class="leading-relaxed text-justify">
+                                Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet werden. Sofern über die Website Verträge geschlossen oder angebahnt werden können, werden die übermittelten Daten auch für Vertragsangebote, Bestellungen oder sonstige Auftragsanfragen verarbeitet.
+                            </p>
+                            <p class="font-bold text-stone-900 dark:text-white text-[11px] mt-2">Welche Rechte haben Sie bezüglich Ihrer Daten?</p>
+                            <p class="leading-relaxed text-justify">
+                                Sie haben jederzeit das Recht, unentgeltlich Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten. Sie haben außerdem ein Recht, die Berichtigung oder Löschung dieser Daten zu verlangen. Wenn Sie eine Einwilligung zur Datenverarbeitung erteilt haben, können Sie diese Einwilligung jederzeit für die Zukunft widerrufen. Außerdem haben Sie das Recht, unter bestimmten Umständen die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen. Des Weiteren steht Ihnen ein Beschwerderecht bei der zuständigen Aufsichtsbehörde zu.
+                            </p>
+                        </div>
+
+                        <div class="space-y-2 border-t border-stone-200 dark:border-stone-800 pt-4">
+                            <h4 class="font-bold text-sm text-stone-900 dark:text-white">2. Hosting</h4>
+                            <p class="leading-relaxed text-justify">
+                                Wir hosten die Inhalte unserer Website bei folgendem Anbieter:
+                            </p>
+                            <p class="font-semibold text-stone-800 dark:text-stone-200 mt-2">Externes Hosting</p>
+                            <p class="leading-relaxed text-justify">
+                                Diese Website wird extern gehostet. Die personenbezogenen Daten, die auf dieser Website erfasst werden, werden auf den Servern des Hosters / der Hoster gespeichert. Hierbei kann es sich v. a. um IP-Adressen, kontaktanfragen, Meta- und Kommunikationsdaten, Vertragsdaten, Kontaktdaten, Namen, Websitezugriffe und sonstige Daten, die über eine Website generiert werden, handeln.
+                            </p>
+                            <p class="leading-relaxed text-justify mt-1">
+                                Das externe Hosting erfolgt zum Zwecke der Vertragserfüllung gegenüber unseren potenziellen und bestehenden Kunden (Art. 6 Abs. 1 lit. b DSGVO) und im Interesse einer sicheren, schnellen und effizienten Bereitstellung unseres Online-Angebots durch einen professionellen Anbieter (Art. 6 Abs. 1 lit. f DSGVO). Sofern eine entsprechende Einwilligung abgefragt wurde, erfolgt die Verarbeitung ausschließlich auf Grundlage von Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG, soweit die Einwilligung die Speicherung von Cookies oder den Zugriff auf Informationen im Endgerät des Nutzers (z. B. Device-Fingerprinting) im Sinne des TDDDG umfasst. Die Einwilligung ist jederzeit widerrufbar.
+                            </p>
+                            <div class="p-3 bg-stone-200/40 dark:bg-stone-900/60 rounded-lg mt-3 text-[11px] leading-relaxed">
+                                <p class="font-bold">Eingesetzter Hoster:</p>
+                                <p>Netlify, Inc.</p>
+                                <p>101 2nd Street, 5th Floor</p>
+                                <p>San Francisco, CA 94105, USA</p>
+                                <p class="mt-1"><a href="https://www.netlify.com/" target="_blank" class="underline hover:text-stone-900 dark:hover:text-white">https://www.netlify.com/</a></p>
+                            </div>
+                            <p class="font-semibold text-stone-800 dark:text-stone-200 mt-2">Auftragsverarbeitung</p>
+                            <p class="leading-relaxed text-justify">
+                                Wir haben einen Vertrag über Auftragsverarbeitung (AVV) zur Nutzung des oben genannten Dienstes geschlossen. Hierbei handelt es sich um einen datenschutzrechtlich vorgeschriebenen Vertrag, der gewährleistet, dass dieser die personenbezogenen Daten unserer Websitebesucher nur nach unseren Weisungen und unter Einhaltung der DSGVO verarbeitet.
+                            </p>
+                        </div>
+
+                        <div class="space-y-2 border-t border-stone-200 dark:border-stone-800 pt-4">
+                            <h4 class="font-bold text-sm text-stone-900 dark:text-white">3. Allgemeine Hinweise und Pflichtinformationen</h4>
+                            <p class="font-semibold text-stone-800 dark:text-stone-200">Datenschutz</p>
+                            <p class="leading-relaxed text-justify">
+                                Die Betreiber dieser Seiten nehmen den Schutz Ihrer persönlichen Daten sehr ernst. Wir behandeln Ihre personenbezogenen Daten vertraulich und entsprechend den gesetzlichen Datenschutzvorschriften sowie dieser Datenschutzerklärung. Wenn Sie diese Website benutzen, werden verschiedene personenbezogene Daten erhoben. Personenbezogene Daten sind Daten, mit denen Sie persönlich identifiziert werden können. Die vorliegende Datenschutzerklärung erläutert, welche Daten wir erheben und wofür wir sie nutzen. Sie erläutert auch, wie und zu welchem Zweck das geschieht.
+                            </p>
+                            <p class="leading-relaxed text-justify mt-1 text-stone-500">
+                                Wir weisen darauf hin, dass die Datenübertragung im Internet (z. B. bei der Kommunikation per E-Mail) Sicherheitslücken aufweisen kann. Ein lückenloser Schutz der Daten vor dem Zugriff durch Dritte ist nicht möglich.
+                            </p>
+
+                            <p class="font-semibold text-stone-800 dark:text-stone-200 mt-4">Hinweis zur verantwortlichen Stelle</p>
+                            <div class="p-3 bg-stone-200/40 dark:bg-stone-900/60 rounded-lg mt-1 text-[11px] leading-relaxed">
+                                <p class="font-bold">Johannes Schneider</p>
+                                <p>Jakob Ruß Weg 3</p>
+                                <p>88214 Ravensburg</p>
+                                <p>Telefon: 017631525007</p>
+                                <p>E-Mail: johannes.schneider.rv@outlook.de</p>
+                            </div>
+                            <p class="leading-relaxed text-justify mt-1 text-[11px]">
+                                Verantwortliche Stelle ist die natürliche oder juristische Person, die allein oder gemeinsam mit anderen über die Zwecke und Mittel der Verarbeitung von personenbezogenen Daten (z. B. Namen, E-Mail-Adressen o. Ä.) entscheidet.
+                            </p>
+
+                            <p class="font-semibold text-stone-800 dark:text-stone-200 mt-4">Speicherdauer</p>
+                            <p class="leading-relaxed text-justify">
+                                Soweit innerhalb dieser Datenschutzerklärung keine speziellere Speicherdauer genannt wurde, verbleiben Ihre personenbezogenen Daten bei uns, bis der Zweck für die Datenverarbeitung entfällt. Wenn Sie ein berechtigtes Löschersuchen geltend machen oder eine Einwilligung zur Datenverarbeitung widerrufen, werden Ihre Daten gelöscht, sofern wir keine anderen rechtlich zulässigen Gründe für die Speicherung Ihrer personenbezogenen Daten haben (z. B. steuer- oder handelsrechtliche Aufbewahrungsfristen); im letztgenannten Fall erfolgt die Löschung nach Fortfall dieser Gründe.
+                            </p>
+
+                            <p class="font-semibold text-stone-800 dark:text-stone-200 mt-4">Rechte der Betroffenen</p>
+                            <p class="leading-relaxed text-justify">
+                                Sie haben jederzeit das Recht auf unentgeltliche Auskunft über Herkunft, Empfänger und Zweck Ihrer gespeicherten personenbezogenen Daten. Sie haben außerdem ein Recht, die Berichtigung, Sperrung oder Löschung dieser Daten zu verlangen. Wenn Sie eine Einwilligung zur Datenverarbeitung erteilt haben, können Sie diese jederzeit für die Zukunft widerrufen.
+                            </p>
+                        </div>
+                        
+                        <div class="text-[10px] text-stone-400 mt-4 text-right">
+                            Referenzierte Datei: datenschutzerklaerung_www_ripe_xpress_live_de.pdf / Quelle: eRecht24
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer button inside modal -->
+                <div class="flex justify-end mt-6 border-t border-stone-200 dark:border-stone-800 pt-4 flex-shrink-0">
+                    <button onclick="toggleLegalModal()" class="px-5 py-2 text-xs font-bold text-white bg-stone-900 dark:bg-white dark:text-black rounded-lg hover:opacity-90">Schließen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 bg-stone-900 text-white dark:bg-white dark:text-stone-900 px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 transition-all duration-300">
+        <span id="toastMessage" class="text-xs font-medium">Aktion durchgeführt</span>
+    </div>
+
+    <!-- APP SCRIPT -->
+    <script>
+        let currentPhotoId = null;
+        let tempImgBase64 = null; // Temporärer Speicher für Drag-and-Drop Base64 Bild
+
+        window.onload = function() {
+            renderPhotos();
+            setupDragAndDrop();
+            loadCloudCredentials();
+        }
+
+        // Load credentials from browser storage so the user doesn't have to retype them
+        function loadCloudCredentials() {
+            if (localStorage.getItem('journal_github_user')) {
+                document.getElementById('githubUser').value = localStorage.getItem('journal_github_user');
+            }
+            if (localStorage.getItem('journal_github_repo')) {
+                document.getElementById('githubRepo').value = localStorage.getItem('journal_github_repo');
+            }
+            if (localStorage.getItem('journal_github_path')) {
+                document.getElementById('githubPath').value = localStorage.getItem('journal_github_path');
+            } else {
+                document.getElementById('githubPath').value = 'gallery.html'; // Default
+            }
+            if (localStorage.getItem('journal_github_token')) {
+                document.getElementById('githubToken').value = localStorage.getItem('journal_github_token');
+            }
+        }
+
+        function saveCloudCredentials(user, repo, path, token) {
+            localStorage.setItem('journal_github_user', user);
+            localStorage.setItem('journal_github_repo', repo);
+            localStorage.setItem('journal_github_path', path);
+            localStorage.setItem('journal_github_token', token);
+        }
+
+        // Drag & Drop Setup
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+
+            if (!dropZone) return;
+
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('border-stone-500', 'bg-stone-100', 'dark:bg-stone-800');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('border-stone-500', 'bg-stone-100', 'dark:bg-stone-800');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(fileInput.files);
+            });
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        tempImgBase64 = e.target.result;
+                        document.getElementById('previewImg').src = tempImgBase64;
+                        document.getElementById('dragPreview').classList.remove('hidden');
+                        showToast("Bild erfolgreich erfasst!");
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    showToast("Fehler: Bitte nur Bilddateien verwenden!");
+                }
+            }
+        }
+
+        // Render Photo Grid
+        function renderPhotos(filteredArray = null) {
+            const list = filteredArray || MEINE_FOTOS;
+            const container = document.getElementById('photoGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            container.innerHTML = '';
+            
+            if (list.length === 0) {
+                emptyState.classList.remove('hidden');
+                container.classList.add('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+                container.classList.remove('hidden');
+            }
+
+            list.forEach(photo => {
+                const card = document.createElement('div');
+                card.className = "group relative cursor-pointer overflow-hidden rounded-lg bg-stone-100 dark:bg-stone-900 border border-stone-200/40 dark:border-stone-900 transition-all duration-300 hover:shadow-xl hover:shadow-stone-950/5";
+                card.setAttribute('onclick', `openDetailModal(${photo.id})`);
+                
+                card.innerHTML = `
+                    <div class="aspect-[4/3] w-full overflow-hidden">
+                        <img src="${photo.url}" alt="Foto" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy">
+                    </div>
+                    <div class="p-5 space-y-2 bg-[#faf9f6] dark:bg-[#0c0e14] transition-colors">
+                        <div class="flex items-center justify-between text-[10px] text-stone-400 dark:text-stone-500 tracking-wider">
+                            <span>${photo.date}</span>
+                            <span class="font-serif italic text-[11px] text-stone-500 dark:text-stone-400">#${photo.tags[0] || 'Momente'}</span>
+                        </div>
+                        <h3 class="text-xs font-serif italic text-stone-600 dark:text-stone-300 line-clamp-1 group-hover:text-stone-900 dark:group-hover:text-white transition-colors">${photo.caption}</h3>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Filtering System
+        function filterPhotos(isMobile = false) {
+            const query = isMobile ? document.getElementById('searchInputMobile').value : document.getElementById('searchInput').value;
+            if (!isMobile) document.getElementById('searchInputMobile').value = query;
+            else document.getElementById('searchInput').value = query;
+
+            const trimmedQuery = query.toLowerCase().trim();
+            if (trimmedQuery === '') {
+                renderPhotos();
+                return;
+            }
+
+            const filtered = MEINE_FOTOS.filter(photo => {
+                const matchesCaption = photo.caption.toLowerCase().includes(trimmedQuery);
+                const matchesTags = photo.tags.some(tag => tag.toLowerCase().includes(trimmedQuery));
+                return matchesCaption || matchesTags;
+            });
+
+            renderPhotos(filtered);
+        }
+
+        // Detail Modal Controller
+        function openDetailModal(id) {
+            currentPhotoId = id;
+            const photo = MEINE_FOTOS.find(p => p.id === id);
+            if (!photo) return;
+
+            document.getElementById('modalImage').src = photo.url;
+            document.getElementById('modalCaption').innerText = photo.caption;
+            document.getElementById('modalDate').innerText = photo.date;
+            
+            // Render modal tags
+            const tagsContainer = document.getElementById('modalTags');
+            tagsContainer.innerHTML = '';
+            photo.tags.forEach(tag => {
+                const tagEl = document.createElement('span');
+                tagEl.className = "px-3 py-1 bg-stone-200/60 dark:bg-stone-900 text-stone-700 dark:text-stone-300 text-[10px] tracking-wider uppercase rounded";
+                tagEl.innerText = tag;
+                tagsContainer.appendChild(tagEl);
+            });
+
+            document.getElementById('detailModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // Schwuppsi Modal Controls
+        function openSchwuppsiModal() {
+            document.getElementById('schwuppsiModal').classList.remove('hidden');
+            renderSchwuppsiList();
+        }
+
+        function closeSchwuppsiModal() {
+            document.getElementById('schwuppsiModal').classList.add('hidden');
+        }
+
+        // Populate management list inside Schwuppsi editor
+        function renderSchwuppsiList() {
+            const listContainer = document.getElementById('schwuppsiList');
+            listContainer.innerHTML = '';
+
+            if (MEINE_FOTOS.length === 0) {
+                listContainer.innerHTML = '<p class="text-xs text-stone-400 italic py-4">Keine Fotos im Journal vorhanden.</p>';
+                return;
+            }
+
+            MEINE_FOTOS.forEach(photo => {
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-2 bg-stone-200/40 dark:bg-stone-900/60 rounded-lg gap-4 border border-stone-200/30 dark:border-stone-800/30";
+                
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <img src="${photo.url}" class="w-10 h-10 rounded object-cover flex-shrink-0 bg-stone-300">
+                        <div class="overflow-hidden">
+                            <p class="text-xs font-serif italic truncate text-stone-700 dark:text-stone-300">${photo.caption}</p>
+                            <p class="text-[9px] text-stone-400">${photo.date}</p>
+                        </div>
+                    </div>
+                    <button onclick="deletePhoto(${photo.id})" class="text-red-500 hover:text-red-600 p-1.5 hover:bg-red-500/10 rounded-full flex-shrink-0 transition-colors" title="Foto löschen">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Add Photo action
+        function submitAddPhoto() {
+            const textUrlInput = document.getElementById('addImgUrl').value.trim();
+            const captionInput = document.getElementById('addCaption').value.trim();
+            const tagsInput = document.getElementById('addTags').value.trim();
+
+            const finalImageUrl = tempImgBase64 || textUrlInput;
+
+            if (!finalImageUrl) {
+                showToast("Bitte ziehe ein Bild hinein oder gib eine gültige URL an!");
+                return;
+            }
+
+            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()) : ["Alltag"];
+            const dateStr = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            const newPhoto = {
+                id: Date.now(),
+                url: finalImageUrl,
+                caption: captionInput || "Ein stiller Moment.",
+                date: dateStr,
+                tags: tags
+            };
+
+            MEINE_FOTOS.unshift(newPhoto);
+
+            // Cleanup Inputs & Preview
+            document.getElementById('addImgUrl').value = '';
+            document.getElementById('addCaption').value = '';
+            document.getElementById('addTags').value = '';
+            document.getElementById('dragPreview').classList.add('hidden');
+            document.getElementById('previewImg').src = '';
+            tempImgBase64 = null;
+
+            renderPhotos();
+            renderSchwuppsiList();
+            showToast("Foto erfolgreich hinzugefügt!");
+        }
+
+        // Delete Photo action
+        function deletePhoto(id) {
+            MEINE_FOTOS = MEINE_FOTOS.filter(photo => photo.id !== id);
+            renderPhotos();
+            renderSchwuppsiList();
+            showToast("Foto gelöscht!");
+        }
+
+        // =========================================================================
+        //  NEU: AUTOMATISCHES NETLIFY LIVE-SPEICHERN ÜBER GITHUB API
+        // =========================================================================
+        async function saveViaGitHubCommit() {
+            const user = document.getElementById('githubUser').value.trim();
+            const repo = document.getElementById('githubRepo').value.trim();
+            const path = document.getElementById('githubPath').value.trim() || 'gallery.html';
+            const token = document.getElementById('githubToken').value.trim();
+
+            if (!user || !repo || !token) {
+                showToast("Fehler: Bitte alle GitHub Cloud-Felder ausfüllen!");
+                return;
+            }
+
+            // Save credentials locally for convenience
+            saveCloudCredentials(user, repo, path, token);
+
+            const button = document.getElementById('btnCommitLive');
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = 'Speichert live in der Cloud...';
+
+            try {
+                // Step 1: Replace data state in current HTML
+                const rawHTML = document.documentElement.outerHTML;
+                const fullHTML = '<!DOCTYPE html>\n' + rawHTML;
+                
+                // Locate database in HTML code using Regex replacement
+                const dbRegex = /(let MEINE_FOTOS = )\[[\s\S]*?\];/;
+                const updatedJSON = JSON.stringify(MEINE_FOTOS, null, 4);
+                const newlyGeneratedHTML = fullHTML.replace(dbRegex, `$1${updatedJSON};`);
+
+                // Step 2: Fetch current SHA of file on GitHub (needed for commit authorization)
+                const fetchUrl = `https://api.github.com/repos/${user}/${repo}/contents/${path}`;
+                const fetchResponse = await fetch(fetchUrl, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!fetchResponse.ok) {
+                    throw new Error("Datei auf GitHub nicht gefunden. Repository-Name oder Pfad prüfen!");
+                }
+
+                const fileData = await fetchResponse.json();
+                const currentSha = fileData.sha;
+
+                // Step 3: Base64-encode updated HTML content safely
+                const utf8Encoder = new TextEncoder();
+                const encodedContent = btoa(
+                    Array.from(utf8Encoder.encode(newlyGeneratedHTML), byte => String.fromCharCode(byte)).join('')
+                );
+
+                // Step 4: Submit PUT commit back to repo
+                const commitBody = {
+                    message: "Bildergalerie aktualisiert via Schwuppsi Editor",
+                    content: encodedContent,
+                    sha: currentSha
+                };
+
+                const commitResponse = await fetch(fetchUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    body: JSON.stringify(commitBody)
+                });
+
+                if (commitResponse.ok) {
+                    showToast("Live-Update erfolgreich! Netlify baut die Seite im Hintergrund neu (ca. 10s).");
+                    setTimeout(() => {
+                        closeSchwuppsiModal();
+                    }, 1500);
+                } else {
+                    const errorDetails = await commitResponse.json();
+                    throw new Error(errorDetails.message || "Fehler beim Senden des Commits.");
+                }
+
+            } catch (err) {
+                console.error(err);
+                showToast("Cloud-Speicher Fehler: " + err.message);
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+
+        // Backup Download-Funktion (Erzeugt komplette Offline-HTML)
+        function downloadUpdatedHTML() {
+            const dataScript = document.getElementById('foto-daten');
+            dataScript.textContent = `\n        let MEINE_FOTOS = ${JSON.stringify(MEINE_FOTOS, null, 4)};\n    `;
+
+            document.getElementById('schwuppsiModal').classList.add('hidden');
+            document.getElementById('detailModal').classList.add('hidden');
+            document.getElementById('legalModal').classList.add('hidden');
+            document.body.style.overflow = '';
+            
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInputMobile').value = '';
+            renderPhotos();
+
+            // Erzeugt saubere statische HTML-Kopie zum Download
+            const finalHTMLContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+            const blob = new Blob([finalHTMLContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gallery.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            setTimeout(() => {
+                openSchwuppsiModal();
+                showToast("Lokales Backup heruntergeladen!");
+            }, 600);
+        }
+
+        // Legal Modal switching between tabs
+        function switchLegalTab(tab) {
+            const tabImpressum = document.getElementById('tabBtnImpressum');
+            const tabDatenschutz = document.getElementById('tabBtnDatenschutz');
+            const paneImpressum = document.getElementById('paneImpressum');
+            const paneDatenschutz = document.getElementById('paneDatenschutz');
+
+            if (tab === 'impressum') {
+                tabImpressum.className = "pb-3 text-xs uppercase tracking-wider font-semibold border-b-2 border-stone-950 dark:border-white text-stone-950 dark:text-white mr-6";
+                tabDatenschutz.className = "pb-3 text-xs uppercase tracking-wider font-semibold border-b-2 border-transparent text-stone-400 hover:text-stone-600 dark:hover:text-white";
+                paneImpressum.classList.remove('hidden');
+                paneDatenschutz.classList.add('hidden');
+            } else {
+                tabDatenschutz.className = "pb-3 text-xs uppercase tracking-wider font-semibold border-b-2 border-stone-950 dark:border-white text-stone-950 dark:text-white";
+                tabImpressum.className = "pb-3 text-xs uppercase tracking-wider font-semibold border-b-2 border-transparent text-stone-400 hover:text-stone-600 dark:hover:text-white mr-6";
+                paneImpressum.classList.add('hidden');
+                paneDatenschutz.classList.remove('hidden');
+            }
+        }
+
+        function toggleLegalModal() {
+            const modal = document.getElementById('legalModal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                switchLegalTab('impressum');
+            }
+        }
+
+        // Toast Messages
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 4500);
+        }
+    </script>
+</body>
+</html>
